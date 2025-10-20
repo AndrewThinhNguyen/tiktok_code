@@ -1,30 +1,51 @@
 @echo off
-setlocal
+setlocal enabledelayedexpansion
 
-echo ≡⚙️ Bắt đầu push vào 2 repository...
+:: === CẤU HÌNH ===
+set BASE_DIR=%cd%
+set TUWI_FOLDER=%BASE_DIR%\tuwi
+set REPO_MAIN=https://github.com/jamesdis/content.git
+set REPO_TUWICODE=https://github.com/AndrewThinhNguyen/tiktok_code.git
 
-REM === COPY FILES VÀO FOLDER tuwi (chỉ giữ .py + .bat)
-mkdir tuwi 2>nul
-xcopy /Y *.py tuwi\
-xcopy /Y *.bat tuwi\
+:: === TẠO FOLDER tuwi nếu chưa có ===
+if not exist "%TUWI_FOLDER%" (
+    echo 🔧 Tạo thư mục tuwi...
+    mkdir "%TUWI_FOLDER%"
+)
 
-REM === REPO 1: jamesdis/content (push toàn bộ gốc)
-echo.
-echo ≡📤 Push lên GitHub: content
+:: === 1. PUSH CODE CHÍNH LÊN REPO jamesdis/content ===
+echo 💻 PUSH lên repo chính: %REPO_MAIN%
+cd /d "%BASE_DIR%"
 git add *.py *.bat
-git commit -m "📌 Push code chính"
-git push origin main
+git commit -m "🔁 quick update"
+git pull origin main --rebase
+git push -u origin main
 
-REM === REPO 2: AndrewThinhNguyen/tiktok_code (chỉ push folder tuwi/)
-cd tuwi
-git init
-git remote add origin https://github.com/AndrewThinhNguyen/tiktok_code.git
-git checkout -b main 2>nul
-git add .
+:: === 2. COPY FILE VÀO THƯ MỤC tuwi ===
+echo 🧩 Copy các file .py và .bat vào tuwi...
+xcopy /Y /Q "%BASE_DIR%\*.py" "%TUWI_FOLDER%\"
+xcopy /Y /Q "%BASE_DIR%\*.bat" "%TUWI_FOLDER%\"
+
+:: === 3. PUSH THƯ MỤC tuwi LÊN REPO tiktok_code ===
+cd /d "%TUWI_FOLDER%"
+if not exist ".git" (
+    git init
+    git remote add origin %REPO_TUWICODE%
+    git branch -M main
+) else (
+    git remote set-url origin %REPO_TUWICODE%
+)
+
+:: Gỡ bỏ ignore nếu có
+cd /d "%BASE_DIR%"
+findstr /V /C:"tuwi/" .gitignore > temp_gitignore.txt
+move /Y temp_gitignore.txt .gitignore > nul
+
+cd /d "%TUWI_FOLDER%"
+git add . -f
 git commit -m "📦 Push folder tuwi/"
-git push -u origin main -f
-cd ..
+git pull origin main --rebase
+git push -u origin main
 
-echo.
-echo ✅ Đã push cả 2 nơi xong!
+echo 🟢 Đã PUSH xong cả hai repo!
 pause
