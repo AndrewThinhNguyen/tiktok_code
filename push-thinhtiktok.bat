@@ -1,41 +1,30 @@
 @echo off
-chcp 65001 >nul
-setlocal EnableDelayedExpansion
+setlocal
 
-set TUWI_DIR=tuwi
-set REMOTE1=https://github.com/jamesdis/content.git
-set REMOTE2=https://github.com/AndrewThinhNguyen/tiktok_code.git
+echo ≡⚙️ Bắt đầu push vào 2 repository...
 
-echo 🧹 Dọn thư mục "%TUWI_DIR%" cũ...
-rmdir /s /q "%TUWI_DIR%" 2>nul
-mkdir "%TUWI_DIR%"
+REM === COPY FILES VÀO FOLDER tuwi (chỉ giữ .py + .bat)
+mkdir tuwi 2>nul
+xcopy /Y *.py tuwi\
+xcopy /Y *.bat tuwi\
 
-echo 📁 Copy các file *.py và *.bat vào thư mục "%TUWI_DIR%"...
-for %%f in (*.py) do copy /Y "%%f" "%TUWI_DIR%" >nul
-for %%f in (*.bat) do (
-    if not "%%f"=="quick_push.bat" copy /Y "%%f" "%TUWI_DIR%" >nul
-)
-
+REM === REPO 1: jamesdis/content (push toàn bộ gốc)
 echo.
-echo 🟢 BƯỚC 1: PUSH TO jamesdis/content
+echo ≡📤 Push lên GitHub: content
 git add *.py *.bat
-git commit -m "🚀 Push .py + .bat files (root)" 2>nul
-git remote set-url origin %REMOTE1%
-git push -u origin main
-
-echo.
-echo 🟣 BƯỚC 2: PUSH FOLDER 'tuwi' TO AndrewThinhNguyen/tiktok_code
-cd "%TUWI_DIR%"
-git init
-git remote add origin %REMOTE2%
-git fetch origin main
-git checkout -b main origin/main
-
-git add .
-git commit -m "📦 Push tuwi folder content"
+git commit -m "📌 Push code chính"
 git push origin main
 
+REM === REPO 2: AndrewThinhNguyen/tiktok_code (chỉ push folder tuwi/)
+cd tuwi
+git init
+git remote add origin https://github.com/AndrewThinhNguyen/tiktok_code.git
+git checkout -b main 2>nul
+git add .
+git commit -m "📦 Push folder tuwi/"
+git push -u origin main -f
 cd ..
+
 echo.
-echo ✅ Đã push xong lên cả 2 GitHub repo!
+echo ✅ Đã push cả 2 nơi xong!
 pause
